@@ -1,27 +1,52 @@
 import { useState } from 'react'
+import { useEffect } from 'react'
 import { useFetchSearchRepo } from '../hooks/useSearchRepoData'
+import { useForm } from "react-hook-form";
 
 export default function Home() {
-  const [username, setUsername] = useState('')
+    const { handleSubmit, register, formState, reset } = useForm();
+    console.log('formState: ', formState);
+
+
+
+  const [repoUsername, setRepoUsername] = useState('')
+//   const [input, setInput] = useState('')
   const [repoData, setRepoData] = useState('')
-  console.log('repoData: ', repoData)
-  console.log('username: ', username)
+  console.log('repoUsername: ', repoUsername);
+  console.log('repoData: ', repoData);
 
-  const { isFetching, data, isError, error } = useFetchSearchRepo('breeds')
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    setRepoData(data)
-    // fetchRepoData()
-    setUsername('')
+
+  const { isFetching, data, isError, error, refetch } = useFetchSearchRepo(repoUsername)
+  console.log('error: ', error);
+  console.log('isError: ', isError);
+console.log('data: ', data);
+
+// if (!isFetching) return <h3>Loading...</h3>
+
+
+
+// const onSubmit = (e) => {
+//     e.preventDefault()
+//     fetchRepoData()
+//     setInput('')
+// }
+
+
+
+const onSubmit = ({username}) => {
+   console.log("values::", username)
+   setRepoUsername(username)
+   //    fetchRepoData(username)
+   reset()
+   refetch()
+}
+
+
+
+
+const fetchRepoData = (username) => {
+    setRepoUsername(username)
   }
-  // console.log('data: ', data);
-  // useEffect(() => {
-
-  // }, [])
-
-  // const fetchRepoData = () => {
-  //     setRepoData(data)
-  // }
 
   
 
@@ -34,12 +59,24 @@ export default function Home() {
       </header>
       <main className='self-center'>
         <section>
-          <form className='space-x-5 ' onSubmit={handleSubmit}>
-            <input
+          <form className='space-x-5 ' onSubmit={handleSubmit(onSubmit)}>
+            {/* <input
               className='px-2 py-2 rounded-full bg-neutral-700  shadow-lg'
               placeholder='username'
-              onChange={(e) => setUsername(e.target.value)}
-              value={username}
+              onChange={(e) => setInput(e.target.value)}
+              value={input}
+            /> */}
+
+<input
+              className='px-2 py-2 rounded-full bg-neutral-700  shadow-lg'
+              placeholder='username'
+              type='text'
+              {...register('username', {
+                  pattern: {
+                      value: /[a-z0-9\W|_]/ig,
+                      message: "username cannot be submitted empty"
+                  }
+              })}
             />
 
             <button
@@ -49,6 +86,18 @@ export default function Home() {
               Search
             </button>
           </form>
+        </section>
+
+        <section>
+        {Array.isArray(repoData) &&
+              repoData.map((repo, idx) => (
+                <>
+                  <li key={idx} className='text-primary pt-3'>
+                    <h2 className='text-secondary'>{repo.name}</h2>
+                  </li>
+                
+                </>
+              ))}
         </section>
 
         <section className='flex flex-row grow justify-around absolute bottom-0 left-0 right-0'>
